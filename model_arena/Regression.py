@@ -98,7 +98,7 @@ class RidgeRegression(Ridge):
 			thisMSE = np.mean(cross_val_score(RidgeRegression(alpha=alpha),X,y,scoring=scoring,cv=cv))
 
 			if not silent:
-				print('alpha = {}\nbestMSE = {}\nthisMSE = {}\n#############'.format(alpha,bestMSE,thisMSE))
+				print('alpha = {}\nbestScore = {}\nthisScore = {}\n#############'.format(alpha,bestMSE,thisMSE))
 
 			# if doubling mode
 			if doublingMode:
@@ -153,7 +153,7 @@ class RidgeRegression(Ridge):
 						break
 
 		self.alpha = alpha
-		print('Ridge Regression MSE = {}, best alpha = {}'.format(bestMSE,alpha))
+		print('Ridge Regression {} = {}, best alpha = {}'.format(scoring,bestMSE,alpha))
 
 	def featureSelection(self,X,y,scoring='neg_mean_squared_error',cv=10):
 		'''
@@ -164,7 +164,7 @@ class RidgeRegression(Ridge):
 		'''
 		
 		# Run through each model in the correct order and run CV on it and save the best CV score
-		bestMeanCV = -1
+		bestMeanCV = None
 		bestMeanCVModel = []
 		oldArraySize = 0
 
@@ -180,15 +180,15 @@ class RidgeRegression(Ridge):
 				x = X.loc[:,thisModel]
 
 				if len(x.columns) == 1:
-					linregCVScores = cross_val_score(Ridge(alpha=6),x.values.reshape(-1,1),y,scoring=scoring,cv=cv)
+					linregCVScores = cross_val_score(Ridge(alpha=self.alpha),x.values.reshape(-1,1),y,scoring=scoring,cv=cv)
 				else:
-					linregCVScores = cross_val_score(Ridge(alpha=6),x,y,scoring=scoring,cv=cv)
+					linregCVScores = cross_val_score(Ridge(alpha=self.alpha),x,y,scoring=scoring,cv=cv)
 
-				if bestMeanCV > -linregCVScores.mean():
-					bestMeanCV = -linregCVScores.mean()
+				if not bestMeanCV:
+					bestMeanCV = linregCVScores.mean()
 					bestPredictor = i
-				elif bestMeanCV == -1:
-					bestMeanCV = -linregCVScores.mean()
+				elif bestMeanCV < linregCVScores.mean():
+					bestMeanCV = linregCVScores.mean()
 					bestPredictor = i
 
 			if bestPredictor not in columnsArray:
@@ -196,9 +196,9 @@ class RidgeRegression(Ridge):
 
 			columnsArray = columnsArray.drop(bestPredictor)
 			bestMeanCVModel.append(bestPredictor)
-			print('{} was added with test MSE {}'.format(bestMeanCVModel[-1],bestMeanCV))
+			print('{} was added with test {} {}'.format(bestMeanCVModel[-1],scoring,bestMeanCV))
 
 
 		self.bestMeanCVModel = bestMeanCVModel
 		self.bestMeanCV = bestMeanCV
-		print('The final best model is {} and its TEST MSE is {}'.format(bestMeanCVModel,bestMeanCV))
+		print('The final best model is {} and its TEST {} is {}'.format(bestMeanCVModel,scoring,bestMeanCV))

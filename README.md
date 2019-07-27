@@ -51,7 +51,7 @@ or
 python -m pip install --user --upgrade twine
 python -m twine upload dist/*
 
-7- Test by pip install and importing
+7- Test by pip install --upgrade model_arena and importing
 
 
 
