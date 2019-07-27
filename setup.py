@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="model_arena",
-    version="0.0.2",
+    version="0.0.3",
     author="Tansel Arif",
     author_email="tanselarif@live.co.uk",
     description="A model extension package",

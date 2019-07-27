@@ -75,7 +75,7 @@ class RidgeRegression(Ridge):
 																									coefs,sd,t,p_values]
 		print(summary_df) 
 		
-	def findBestAlpha(self,X,y,cv=10,silent=True):
+	def findBestAlpha(self,X,y,cv=10,scoring='neg_mean_squared_error',silent=True):
 		'''
 		This method keeps changing alpha until the MSE is reduced as much as it can be reduced. This
 		alpha selection depends on input datasets
@@ -95,7 +95,7 @@ class RidgeRegression(Ridge):
 		# Then, at this point, we switch to incrementing (or decrementing) by smaller amounts until the tolerance is reached
 		while True:
 			# Calculate the MSE using this alpha
-			thisMSE = np.mean(cross_val_score(RidgeRegression(alpha=alpha),X,y,scoring='neg_mean_squared_error',cv=cv))
+			thisMSE = np.mean(cross_val_score(RidgeRegression(alpha=alpha),X,y,scoring=scoring,cv=cv))
 
 			if not silent:
 				print('alpha = {}\nbestMSE = {}\nthisMSE = {}\n#############'.format(alpha,bestMSE,thisMSE))
@@ -132,8 +132,8 @@ class RidgeRegression(Ridge):
 					nextAlpha2 = 0.0001
 					
 				# Calculate the MSE on either side of alpha
-				MSE1 = np.mean(cross_val_score(RidgeRegression(alpha=nextAlpha1),X,y,scoring='neg_mean_squared_error',cv=cv))
-				MSE2 = np.mean(cross_val_score(RidgeRegression(alpha=nextAlpha2),X,y,scoring='neg_mean_squared_error',cv=cv))
+				MSE1 = np.mean(cross_val_score(RidgeRegression(alpha=nextAlpha1),X,y,scoring=scoring,cv=cv))
+				MSE2 = np.mean(cross_val_score(RidgeRegression(alpha=nextAlpha2),X,y,scoring=scoring,cv=cv))
 
 				# Choose to MSE and the corresponding alpha of the one that is better
 				if (MSE1 > MSE2) and (MSE1 > bestMSE) and (np.abs(prevAlpha - alpha) > tol):
@@ -155,7 +155,7 @@ class RidgeRegression(Ridge):
 		self.alpha = alpha
 		print('Ridge Regression MSE = {}, best alpha = {}'.format(bestMSE,alpha))
 
-	def featureSelection(self,X,y,cv=10):
+	def featureSelection(self,X,y,scoring='neg_mean_squared_error',cv=10):
 		'''
 		This method iterates and adds a new feature to the features list in the
 		order of best improvement of MSE
@@ -180,9 +180,9 @@ class RidgeRegression(Ridge):
 				x = X.loc[:,thisModel]
 
 				if len(x.columns) == 1:
-					linregCVScores = cross_val_score(Ridge(alpha=6),x.values.reshape(-1,1),y,scoring='neg_mean_squared_error',cv=cv)
+					linregCVScores = cross_val_score(Ridge(alpha=6),x.values.reshape(-1,1),y,scoring=scoring,cv=cv)
 				else:
-					linregCVScores = cross_val_score(Ridge(alpha=6),x,y,scoring='neg_mean_squared_error',cv=cv)
+					linregCVScores = cross_val_score(Ridge(alpha=6),x,y,scoring=scoring,cv=cv)
 
 				if bestMeanCV > -linregCVScores.mean():
 					bestMeanCV = -linregCVScores.mean()
